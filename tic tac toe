@@ -1,0 +1,110 @@
+import pygame
+from tkinter import *
+from tkinter import messagebox
+pygame.init()
+
+def game_lines():
+    pygame.draw.line(screen, (0, 153, 153), (20, 150), (580, 150), 10)
+    pygame.draw.line(screen, (0, 153, 153), (20, 300), (580, 300), 10)
+    pygame.draw.line(screen, (0, 153, 153), (200, 20), (200, 430), 10)
+    pygame.draw.line(screen, (0, 153, 153), (400, 20), (400, 430), 10)
+
+def game_plan(row, col, player):
+    board[row][col] = player
+
+
+def checking_availability(row, col):
+    if board[row][col] == 0:
+        return True
+    else:
+        return False
+
+def win_score(score):
+    font = pygame.font.Font("freesansbold.ttf", 27 )
+    scoreboard = font.render(str(score["X"]) + " :X|O: " + str(score["O"]),True, (255,255,255))
+    screen.blit(scoreboard, (240,10))
+
+def draw_game():
+    for row in range(3):
+        for col in range(3):
+            if board[row][col] == "x":
+                pygame.draw.line(screen, (255, 0, 0), (col * 200 + 150, row * 150 + 50),
+                                 (col * 200 + 50, row * 150 + 100), 15)
+                pygame.draw.line(screen, (255, 0, 0), (col * 200 + 50, row * 150 + 50),
+                                 (col * 200 + 150, row * 150 + 100), 15)
+            elif board[row][col] == "o":
+                pygame.draw.circle(screen, (204, 0, 204), (col * 200 + 100, row * 150 + 75), 50, 15)
+
+def wining_or_losing(board, player):
+    for i in range(3):
+        if board[i][0] == player and board[i][1] == player and board[i][2] == player:
+            pygame.draw.line(screen, (255, 0, 0), (50, 75 + (150*i)),(550, 75 + (150*i)), 5)
+            return True
+        elif board[0][i] == player and board[1][i] == player and board[2][i] == player:
+            pygame.draw.line(screen, (255, 0, 0), (100 + (200*i), 20), (100 + (200*i), 430), 5)
+            return True
+        elif board[0][0] == player and board[1][1] == player and board[2][2] == player:
+            pygame.draw.line(screen, (255, 0, 0), (25, 25), (575, 425), 5)
+            return True
+        elif board[2][0] == player and board[1][1] == player and board[0][2] == player:
+            pygame.draw.line(screen, (255, 0, 0), (575, 25), (25, 425), 5)
+            return True
+    return False
+
+def end_game(board):
+    for row in board:
+        for col in row:
+            if col == 0:
+                return False
+    return True
+
+screen = pygame.display.set_mode((600, 450))
+screen.fill((20, 30, 40))
+pygame.display.set_caption("tic tac toe")
+
+board = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+score = {"X":0, "O":0}
+game_lines()
+game_over = False
+player = "x"
+running = True
+
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        win_score(score)
+        if event.type == pygame.MOUSEBUTTONDOWN and not game_over:
+            mouse_click_col = int((event.pos[0]) // 200)
+            mouse_click_row = int((event.pos[1]) // 150)
+
+            if checking_availability(mouse_click_row, mouse_click_col):
+                if player == "x":
+                    game_plan(mouse_click_row, mouse_click_col, "x")
+                    if wining_or_losing(board, player):
+                        game_over = True
+                    player = "o"
+                elif player == "o":
+                    game_plan(mouse_click_row, mouse_click_col, "o")
+                    if wining_or_losing(board, player):
+                        game_over = True
+                    player = "x"
+                draw_game()
+
+        elif game_over or end_game(board):
+            if player == "x":
+                player = "O"
+            elif player == "o":
+                player = "X"
+            if game_over:
+                score[player] += 1
+
+            elif end_game(board):
+                player = "tie"
+            screen.fill((20, 30, 40))
+            game_lines()
+            game_over = False
+            player = "x"
+            board = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+
+    pygame.display.update()
